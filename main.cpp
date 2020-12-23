@@ -1,11 +1,11 @@
 #include "subway.hpp"
-#include <iostream>
+// #include <iostream>
 
-using namespace std;
+// using namespace std;
 
 void menu(void) {
     cout << "----------------------------------------------" << endl;
-    cout << "            GuangZhou Metro Map               " << endl;
+    cout << "-           GuangZhou Metro Map              -" << endl;
     cout << "----------------------------------------------" << endl;
     cout << "-           1. show Metro line               -" << endl;
     //按顺序显示某一条线路的所有站
@@ -21,8 +21,8 @@ int main(void) {
     int n;
     string sta, start, des, line;
     Subway_info Info;
-    menu();
     while (true) {
+        menu();
         cin >> n;
         switch (n) {
             case 1:
@@ -36,14 +36,20 @@ int main(void) {
                 Info.show_line_station_locates(sta);
                 break;
             case 3:
-                cout << "Please enter your starting and destination station(seperated by space or enter)" << endl;
-                cin >> start >> des;
+                // cout << "Please enter your starting and destination station(seperated by space or enter)" << endl;
+                // cin >> start >> des;
+                cout << "Please enter your starting and destination station (in Chinese)" << endl << "From: ";
+                cin >> start;
+                cout << "To: ";
+                cin >> des;
                 Info.Least_transfer_solution(start, des);
                 Info.Least_stations_solution(start, des);
                 break;
             case 0:
                 cout << "Bye!" << endl;
                 return 0;
+            default:
+                cout << "Please enter 0, 1, 2 or 3 !" << endl;
         }
     }
 }

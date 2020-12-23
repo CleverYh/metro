@@ -3,10 +3,10 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <map>
 #include <windows.h>
 
 using namespace std;
@@ -28,10 +28,9 @@ public:
     Subway_info() { //读文件
         ifstream in;
         in.open("guangzhou.txt");
-        string s, station_name, line_name; // s 用来干啥
+        string s, station_name, line_name;
         stringstream stream;
-        int num, station_index, lineNum, line, staNum, adjcent_station_index; // num 用来干啥
-        string str;                                                           // 用来干啥
+        int station_index, lineNum, line, staNum, adjcent_station_index;
 
         // read meta data including number of lines and number of stations
         // also read the lines' chinese name in the first line of the file
@@ -86,8 +85,8 @@ public:
 
     //中文站名到索引
     int name_to_index(string sta_name) {
-        for (int i = 0; i < chinese_name_sta.size(); i++) 
-            if (sta_name == chinese_name_sta[i]) 
+        for (int i = 0; i < chinese_name_sta.size(); i++)
+            if (sta_name == chinese_name_sta[i])
                 return i;
     }
 
@@ -115,16 +114,16 @@ public:
 
     //显示站所在线路
     void show_line_station_locates(const int sta) {
-        for (int i = 0; i < lines_of_sta[sta].size();i++){
+        for (int i = 0; i < lines_of_sta[sta].size(); i++) {
             //cout << UTF8ToGB(chinese_name_lines[lines_of_sta[sta][i]].c_str()).c_str() << " ";
             cout << chinese_name_lines[lines_of_sta[sta][i]] << " ";
         }
         cout << endl;
     }
 
-    void show_line_station_locates(const string sta){
-        for(int i = 0; i < chinese_name_sta.size(); i++){
-            if(chinese_name_sta[i] == sta){
+    void show_line_station_locates(const string sta) {
+        for (int i = 0; i < chinese_name_sta.size(); i++) {
+            if (chinese_name_sta[i] == sta) {
                 show_line_station_locates(i);
                 break;
             }
@@ -151,7 +150,7 @@ public:
                 }
             }
         }
-        //cout << "unordered_line complete" << endl; 
+        //cout << "unordered_line complete" << endl;
         //找起始点
         int cnt, start;
         for (int i = 0; i < unordered_line.size(); i++) {
@@ -171,7 +170,7 @@ public:
         vector<int> correct_line;
         map<int, int> used;
         for (int i = 0; i < unordered_line.size(); i++) {
-            used.insert(pair<int, int> (unordered_line[i], 0));
+            used.insert(pair<int, int>(unordered_line[i], 0));
         }
         correct_line.push_back(start);
         used[start] = 1;
@@ -200,10 +199,10 @@ public:
         cout << chinese_name_sta[correct_line[correct_line.size() - 1]] << endl;
     }
     //最少换乘
-    void show_LTS(vector< vector<int> > fault_solutions, int start, int end) {
+    void show_LTS(vector<vector<int>> fault_solutions, int start, int end) {
         int flag;
         vector<int> toDelete(fault_solutions.size(), 0);
-        vector< vector<int> > solutions;
+        vector<vector<int>> solutions;
         for (int i = 0; i < fault_solutions.size() - 1; i++) {
             for (int j = i + 1; j < fault_solutions.size(); j++) {
                 flag = 1;
@@ -213,7 +212,7 @@ public:
                         break;
                     }
                 }
-                if (flag) 
+                if (flag)
                     toDelete[j] = 1;
             }
         }
@@ -238,7 +237,7 @@ public:
                     flag1 = 0;
                     flag2 = 0;
                     for (int iii = 0; iii < lines_of_sta[ii].size(); iii++) {
-                        if (lines_of_sta[ii][iii] == solutions[i][j]) 
+                        if (lines_of_sta[ii][iii] == solutions[i][j])
                             flag1 = 1;
                         if (lines_of_sta[ii][iii] == solutions[i][j + 1])
                             flag2 = 1;
@@ -247,7 +246,7 @@ public:
                         cout << chinese_name_sta[ii];
                         break;
                     }
-                } 
+                }
             }
             cout << "-" << chinese_name_lines[solutions[i][solutions[i].size() - 1]] << "->" << chinese_name_sta[end] << endl;
         }
@@ -259,8 +258,8 @@ public:
 
         //cout << start << " " << end << endl;
         int min = my_max;
-        vector< vector<int> > solutions;
-        vector< vector<int> > tmp_solution;
+        vector<vector<int>> solutions;
+        vector<vector<int>> tmp_solution;
         for (int i = 0; i < lines_of_sta[start].size(); i++) {
             for (int j = 0; j < lines_of_sta[end].size(); j++) {
                 //cout << "1" << endl;
@@ -271,7 +270,7 @@ public:
                         solutions.clear();
                         solutions.push_back(tmp_solution[ii]);
                         min = tmp_solution[ii].size();
-                    } 
+                    }
                     if (tmp_solution[ii].size() == min) {
                         solutions.push_back(tmp_solution[ii]);
                     }
@@ -283,10 +282,10 @@ public:
         return;
     }
 
-    vector< vector<int> > BFS_LTS(int start, int end, int line_num) {
-        vector< vector<int> > ret;
-        vector< pair<int, int> > record;
-        vector<int> visited(line_num, 0);        
+    vector<vector<int>> BFS_LTS(int start, int end, int line_num) {
+        vector<vector<int>> ret;
+        vector<pair<int, int>> record;
+        vector<int> visited(line_num, 0);
         int sentinel = 1;
         int iter = 0;
         int flag = 0;
@@ -300,10 +299,9 @@ public:
                 sentinel = record.size();
             }
             pair<int, int> tmp = record[iter];
-            if (tmp.second == end) 
+            if (tmp.second == end)
                 flag = 1;
             visited[tmp.second] = 1;
-            
 
             for (int i = 0; i < line_num; i++) {
                 if (!visited[i] && lines[tmp.second][i]) {
@@ -342,23 +340,23 @@ public:
 
         return ret;
     }
-    
+
     //最少站点
     void Least_stations_solution(string curr_station, string destination) {
         int start = name_to_index(curr_station);
         int end = name_to_index(destination);
 
-        vector< vector<int> > fault_solutions = BFS_LSS(start, end);
+        vector<vector<int>> fault_solutions = BFS_LSS(start, end);
 
         show_LSS(fault_solutions);
 
         return;
     }
 
-    void show_LSS(vector< vector<int> > fault_solutions) {
+    void show_LSS(vector<vector<int>> fault_solutions) {
         int flag;
         vector<int> toDelete(fault_solutions.size(), 0);
-        vector< vector<int> > solutions;
+        vector<vector<int>> solutions;
         for (int i = 0; i < fault_solutions.size() - 1; i++) {
             for (int j = i + 1; j < fault_solutions.size(); j++) {
                 flag = 1;
@@ -368,7 +366,7 @@ public:
                         break;
                     }
                 }
-                if (flag) 
+                if (flag)
                     toDelete[j] = 1;
             }
         }
@@ -380,7 +378,7 @@ public:
         if (solutions.size() == 1) {
             cout << "Here is the only solution to the shortest route: " << endl;
         } else {
-            cout << "Here are " << solutions.size() << " solutions to the shortest route: "<< endl;
+            cout << "Here are " << solutions.size() << " solutions to the shortest route: " << endl;
         }
         for (int i = 0; i < solutions.size(); i++) {
             for (int j = 0; j < solutions[i].size() - 1; j++) {
@@ -392,10 +390,10 @@ public:
         return;
     }
 
-    vector< vector<int> > BFS_LSS(int start, int end) {
-        vector< vector<int> > ret;
-        vector< pair<int, int> > record;
-        vector<int> visited(stations.size(), 0);        
+    vector<vector<int>> BFS_LSS(int start, int end) {
+        vector<vector<int>> ret;
+        vector<pair<int, int>> record;
+        vector<int> visited(stations.size(), 0);
         int sentinel = 1;
         int iter = 0;
         int flag = 0;
@@ -409,10 +407,9 @@ public:
                 sentinel = record.size();
             }
             pair<int, int> tmp = record[iter];
-            if (tmp.second == end) 
+            if (tmp.second == end)
                 flag = 1;
             visited[tmp.second] = 1;
-            
 
             for (int i = 0; i < stations.size(); i++) {
                 if (!visited[i] && stations[tmp.second][i]) {
