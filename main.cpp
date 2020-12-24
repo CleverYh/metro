@@ -43,7 +43,8 @@ int main(void) {
                 cout << "To: ";
                 cin >> des;
                 Info.Least_transfer_solution(start, des);
-                Info.Least_stations_solution(start, des);
+                // Info.Least_stations_solution(start, des);
+                Info.Least_time_solution(start, des);
                 break;
             case 0:
                 cout << "Bye!" << endl;

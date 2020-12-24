@@ -4,14 +4,17 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <queue>
 #include <sstream>
+#include <stack>
 #include <string>
 #include <vector>
 #include <windows.h>
 
 using namespace std;
 
-const int my_max = 99999999;
+#define my_max 214748364
+
 // string linename[16]= { "地铁一号线","地铁二号线", "地铁三号线", "地铁三号线北延段","地铁四号线" ,"地铁五号线", "地铁六号线", "地铁七号线", "地铁八号线",
 //      "地铁九号线", "地铁十三号线", "地铁十四号线", "地铁二十一号线", "地铁广佛线","地铁APM线", "地铁十四号线支线" };
 
@@ -27,7 +30,9 @@ class Subway_info {
 public:
     Subway_info() { //读文件
         ifstream in;
-        in.open("guangzhou.txt");
+        // in.open("guangzhou.txt");
+
+        in.open("C:\\Users\\cortex\\Documents\\code\\cpp\\metro\\guangzhou.txt");
         string s, station_name, line_name;
         stringstream stream;
         int station_index, lineNum, line, staNum, adjcent_station_index;
@@ -37,17 +42,19 @@ public:
         getline(in, s);
         stream << s;
         stream >> lineNum >> staNum;
+        // cout << lineNum << staNum;
         for (int i = 0; i < lineNum; i++) {
             stream >> line_name;
             chinese_name_lines.push_back(line_name);
             // cout << chinese_name_lines[i] << " " << i << endl;
         }
 
+        // stations.resize(staNum,vector<int>(staNum,my_max));
         stations.resize(staNum);
+
         lines_of_sta.resize(staNum);
-        for (int i = 0; i < staNum; i++) {
-            stations[i].resize(staNum);
-        }
+        for (int i = 0; i < staNum; i++) stations[i].resize(staNum, my_max);
+
         lines.resize(lineNum);
         for (int i = 0; i < lineNum; i++) lines[i].resize(lineNum);
 
@@ -307,8 +314,7 @@ public:
                 if (!visited[i] && lines[tmp.second][i]) {
                     pair<int, int> new_rec(tmp.second, i);
                     record.push_back(new_rec);
-                    if (!flag)
-                        sentinel++;
+                    if (!flag) sentinel++;
                 }
             }
 
@@ -388,6 +394,123 @@ public:
         }
 
         return;
+    }
+
+    // vector<vector<int>> Floyd_LeastTimeSolutions(int start, int end) {
+    //     vector<vector<int>> ret, D;
+    //     D.resize(stations.size(), vector<int>(stations.size(), 0));
+    //     vector<vector<vector<int>>> P;
+    //     P.resize(stations.size(), D);
+    //     int i, u, v, w;
+
+    //     for (v = 0; v < stations.size(); v++) {
+    //         for (w = 0; w < stations.size(); w++) {
+    //             D[v][w] = stations[v][w];
+    //             for (u = 0; u < stations.size(); u++) P[v][w][u] = 0;
+    //             if (D[v][w] < my_max) P[v][w][u] = 1;
+    //         }
+    //     }
+
+    //     for (u = 0; u < stations.size(); u++) {
+    //         for (v = 0; v < stations.size(); v++) {
+    //             for (w = 0; w < stations.size(); w++) {
+    //                 if (D[v][u] + D[u][w] < D[v][w]) //从v经u到w的一条路径更短
+    //                 {
+    //                     D[v][w] = D[v][u] + D[u][w];
+    //                     for (i = 0; i < stations.size(); i++) {
+    //                         P[v][w][i] = P[v][u][i] || P[u][w][i]; //更新路径
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     cout << D[start][end] << endl;
+
+    //     for (int i = 0; i < stations.size(); i++) cout<<P[start][end][i];
+    //     // if (P[start][end][i] == 1) cout << i << " ";
+    //     cout << "1" << endl;
+    //     return ret;
+    // }
+
+    //最少时间
+    void Least_time_solution(string curr_station, string destination) {
+        int start = name_to_index(curr_station);
+        int end = name_to_index(destination);
+
+        // vector<vector<int>> lt_solutions = Floyd_LeastTimeSolutions(start, end);
+
+        vector<vector<int>> lt_solutions = Dijkstra_LeastTimeSolutions(start, end);
+
+        printPath(lt_solutions);
+
+        return;
+    }
+
+    vector<vector<int>> Dijkstra_LeastTimeSolutions(int start, int end) {
+        int n = stations.size();
+
+        vector<vector<int>> res(n, vector<int>(0, 0));
+
+        vector<int> dist(n, my_max);
+        vector<vector<int>> path(n, vector<int>(0, 0));
+        vector<bool> known(n, false);
+
+        for (size_t i = 0; i < n; i++) dist[i] = stations[start][i];
+
+        dist[start] = 0;
+        known[start] = true;
+
+        for (size_t i = 0; i < n; i++) {
+            int v = -1;
+            int m = my_max;
+
+            for (size_t i = 0; i < n; i++) {
+                if (!known[i] && dist[i] < m) {
+                    v = i;
+                    m = dist[i];
+                }
+            }
+
+            if (v == -1) break; // cannot find shorter unkown path
+
+            known[v] = true;
+            for (size_t i = 0; i < n; i++) {
+                if (!known[i] && (stations[v][i] < my_max)) {
+                    if (dist[v] + stations[v][i] < dist[i]) {
+                        dist[i] = dist[v] + stations[v][i];
+                        path[i].push_back(v);
+                    }
+                }
+            }
+        }
+
+        // queue<int> q;
+        stack<int> s;
+        int p = end;
+        while (!path[p].empty()) {
+            s.push(path[p].back());
+            p = path[p].back();
+        }
+
+        res[0].push_back(start);
+        while (!s.empty()) {
+            res[0].push_back(s.top());
+            // cout << s.top() << " ";
+            s.pop();
+        }
+        res[0].push_back(end);
+
+        return res;
+    }
+
+    void printPath(vector<vector<int>> path) {
+        for (int i = 0; i < path.size(); i++) {
+            for (int j = 0; j < path[i].size(); j++) {
+                cout << chinese_name_sta[path[i][j]] << " ";
+            }
+            // cout << endl;
+        }
     }
 
     vector<vector<int>> BFS_LSS(int start, int end) {
