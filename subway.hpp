@@ -1,6 +1,7 @@
 #ifndef _SUBWAY_HPP_
 #define _SUBWAY_HPP_
 
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -29,13 +30,16 @@ class Subway_info {
 
 public:
     Subway_info() { //读文件
+
+        // printf("Initializing...\n");
+        
         ifstream in;
         // in.open("guangzhou.txt");
 
         in.open("C:\\Users\\cortex\\Documents\\code\\cpp\\metro\\guangzhou.txt");
         string s, station_name, line_name;
         stringstream stream;
-        int station_index, lineNum, line, staNum, adjcent_station_index;
+        int station_index, lineNum, line, staNum, adjcent_station_index, adjcent_station_weight;
 
         // read meta data including number of lines and number of stations
         // also read the lines' chinese name in the first line of the file
@@ -43,6 +47,7 @@ public:
         stream << s;
         stream >> lineNum >> staNum;
         // cout << lineNum << staNum;
+        cout << "Initializing " << staNum << " stations in " << lineNum << " lines..." << endl;
         for (int i = 0; i < lineNum; i++) {
             stream >> line_name;
             chinese_name_lines.push_back(line_name);
@@ -80,9 +85,9 @@ public:
             stream >> staNum;
             // cout << staNum << " ";
             for (int i = 0; i < staNum; i++) {
-                stream >> adjcent_station_index;
-                stations[station_index][adjcent_station_index] = stations[adjcent_station_index][station_index] = 1;
-                // cout << adjcent_station_index << " ";
+                stream >> adjcent_station_index >> adjcent_station_weight;
+                stations[station_index][adjcent_station_index] = stations[adjcent_station_index][station_index] = adjcent_station_weight;
+                // cout << adjcent_station_index << " " << stations[station_index][adjcent_station_index]<<endl;
             }
             // cout << endl;
         }
@@ -137,6 +142,10 @@ public:
         }
     }
 
+    void show_entire_line(const int line){
+        show_entire_line(chinese_name_lines[line]);
+    }
+
     void show_entire_line(const string line) {
         int l;
         for (int i = 0; i < chinese_name_lines.size(); i++) {
@@ -152,7 +161,7 @@ public:
             for (int j = 0; j < lines_of_sta[i].size(); j++) {
                 if (lines_of_sta[i][j] == l) {
                     unordered_line.push_back(i);
-                    //cout << i << endl;
+                    // cout << i << endl;
                     break;
                 }
             }
@@ -163,7 +172,7 @@ public:
         for (int i = 0; i < unordered_line.size(); i++) {
             cnt = 0;
             for (int j = 0; j < unordered_line.size(); j++) {
-                if (stations[unordered_line[i]][unordered_line[j]] == 1)
+                if (stations[unordered_line[i]][unordered_line[j]] < my_max)
                     cnt++;
             }
             if (cnt == 1) {
@@ -359,6 +368,65 @@ public:
         return;
     }
 
+    vector<vector<int>> BFS_LSS(int start, int end) {
+        vector<vector<int>> ret;
+        vector<pair<int, int>> record;
+        vector<int> visited(stations.size(), 0);
+        int sentinel = 1;
+        int iter = 0;
+        int flag = 0;
+
+        pair<int, int> head(-1, start);
+        record.push_back(head);
+        while (iter <= sentinel) {
+            if (iter == sentinel) {
+                if (flag)
+                    break;
+                sentinel = record.size();
+            }
+            pair<int, int> tmp = record[iter];
+            if (tmp.second == end)
+                flag = 1;
+            visited[tmp.second] = 1;
+
+            for (int i = 0; i < stations.size(); i++) {
+                if (!visited[i] && stations[tmp.second][i]) {
+                    pair<int, int> new_rec(tmp.second, i);
+                    record.push_back(new_rec);
+                    if (!flag)
+                        sentinel++;
+                }
+            }
+
+            iter++;
+        }
+
+        for (int i = record.size() - 1; 0 <= i; i--) {
+            if (record[i].second == end) {
+                vector<int> ans;
+                ans.push_back(end);
+                int flag = record[i].first;
+                while (flag != -1) {
+                    for (int j = i - 1; 0 <= j; j--) {
+                        if (record[j].second == flag) {
+                            ans.push_back(flag);
+                            flag = record[j].first;
+                            break;
+                        }
+                    }
+                }
+                for (int j = 0; j < ans.size() / 2; j++) {
+                    int tmpInt = ans[j];
+                    ans[j] = ans[ans.size() - 1 - j];
+                    ans[ans.size() - 1 - j] = tmpInt;
+                }
+                ret.push_back(ans);
+            }
+        }
+
+        return ret;
+    }
+
     void show_LSS(vector<vector<int>> fault_solutions) {
         int flag;
         vector<int> toDelete(fault_solutions.size(), 0);
@@ -505,72 +573,25 @@ public:
     }
 
     void printPath(vector<vector<int>> path) {
+        int currline, flag;
         for (int i = 0; i < path.size(); i++) {
+            currline = -1;
             for (int j = 0; j < path[i].size(); j++) {
+                flag = 0;
+                for (int k = 0; k < lines_of_sta[path[i][j]].size(); k++) {
+                    if (lines_of_sta[path[i][j]][k] == currline) {
+                        flag = 1;
+                        break;
+                    }
+                }
+
                 cout << chinese_name_sta[path[i][j]] << " ";
             }
             // cout << endl;
         }
     }
 
-    vector<vector<int>> BFS_LSS(int start, int end) {
-        vector<vector<int>> ret;
-        vector<pair<int, int>> record;
-        vector<int> visited(stations.size(), 0);
-        int sentinel = 1;
-        int iter = 0;
-        int flag = 0;
-
-        pair<int, int> head(-1, start);
-        record.push_back(head);
-        while (iter <= sentinel) {
-            if (iter == sentinel) {
-                if (flag)
-                    break;
-                sentinel = record.size();
-            }
-            pair<int, int> tmp = record[iter];
-            if (tmp.second == end)
-                flag = 1;
-            visited[tmp.second] = 1;
-
-            for (int i = 0; i < stations.size(); i++) {
-                if (!visited[i] && stations[tmp.second][i]) {
-                    pair<int, int> new_rec(tmp.second, i);
-                    record.push_back(new_rec);
-                    if (!flag)
-                        sentinel++;
-                }
-            }
-
-            iter++;
-        }
-
-        for (int i = record.size() - 1; 0 <= i; i--) {
-            if (record[i].second == end) {
-                vector<int> ans;
-                ans.push_back(end);
-                int flag = record[i].first;
-                while (flag != -1) {
-                    for (int j = i - 1; 0 <= j; j--) {
-                        if (record[j].second == flag) {
-                            ans.push_back(flag);
-                            flag = record[j].first;
-                            break;
-                        }
-                    }
-                }
-                for (int j = 0; j < ans.size() / 2; j++) {
-                    int tmpInt = ans[j];
-                    ans[j] = ans[ans.size() - 1 - j];
-                    ans[ans.size() - 1 - j] = tmpInt;
-                }
-                ret.push_back(ans);
-            }
-        }
-
-        return ret;
-    }
+    
 };
 
 #endif
