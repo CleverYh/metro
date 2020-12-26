@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <queue>
@@ -26,13 +27,14 @@ class Subway_info {
     vector<vector<int>> lines;       // adjRect of lines
     vector<string> chinese_name_sta; // 这里用map映射会不会比较好
     vector<string> chinese_name_lines;
-    vector<vector<int>> lines_of_sta;
+    vector<vector<int>> lines_of_sta;     // 站所在线路
+    vector<vector<int>> stations_of_line; // 线路上的站
 
 public:
     Subway_info() { //读文件
 
         // printf("Initializing...\n");
-        
+
         ifstream in;
         // in.open("guangzhou.txt");
 
@@ -47,7 +49,7 @@ public:
         stream << s;
         stream >> lineNum >> staNum;
         // cout << lineNum << staNum;
-        cout << "Initializing " << staNum << " stations in " << lineNum << " lines..." << endl;
+        cout << "Initializing " << staNum << " stations on " << lineNum << " lines..." << endl;
         for (int i = 0; i < lineNum; i++) {
             stream >> line_name;
             chinese_name_lines.push_back(line_name);
@@ -93,6 +95,9 @@ public:
         }
 
         in.close();
+
+        for (int i = 0; i < lines.size(); i++)
+            stations_of_line.push_back(entire_line(i));
     }
 
     //中文站名到索引
@@ -142,25 +147,16 @@ public:
         }
     }
 
-    void show_entire_line(const int line){
-        show_entire_line(chinese_name_lines[line]);
-    }
-
-    void show_entire_line(const string line) {
-        int l;
-        for (int i = 0; i < chinese_name_lines.size(); i++) {
-            if (line == chinese_name_lines[i]) {
-                l = i;
-                break;
-            }
-        }
+    // 获取整条线路上的站
+    vector<int> entire_line(const int line) {
+        int l = line;
         //cout << "line is " << l << endl;
         vector<int> unordered_line;
         //找起始站，然后把一串儿都显示出来
         for (int i = 0; i < lines_of_sta.size(); i++) {
             for (int j = 0; j < lines_of_sta[i].size(); j++) {
                 if (lines_of_sta[i][j] == l) {
-                    unordered_line.push_back(i);
+                    unordered_line.push_back(i); // i is on Line l
                     // cout << i << endl;
                     break;
                 }
@@ -177,6 +173,7 @@ public:
             }
             if (cnt == 1) {
                 start = unordered_line[i];
+                // cout << start;
                 break;
             }
         }
@@ -194,7 +191,7 @@ public:
             int to_push_back = -1;
             for (int i = 0; i < unordered_line.size(); i++) {
                 int flag = 0;
-                if (!used[unordered_line[i]] && stations[unordered_line[i]][start]) {
+                if (!used[unordered_line[i]] && stations[unordered_line[i]][start] < my_max) {
                     to_push_back = unordered_line[i];
                     break;
                 }
@@ -207,13 +204,45 @@ public:
                 start = to_push_back;
             }
         }
+        // for (int j = 0;j<correct_line.size();j++){
+        //         cout << chinese_name_sta[correct_line[j]]<<" ";
+        //     }
+        //     cout << endl;
 
-        cout << "The stations on " << line << " are:" << endl;
-        for (int i = 0; i < correct_line.size() - 1; i++) {
-            cout << chinese_name_sta[correct_line[i]] << "<-->";
-        }
-        cout << chinese_name_sta[correct_line[correct_line.size() - 1]] << endl;
+        return correct_line;
     }
+
+    void show_entire_line(const string line) {
+        int l;
+        for (int i = 0; i < chinese_name_lines.size(); i++) {
+            if (line == chinese_name_lines[i]) {
+                l = i;
+                break;
+            }
+        }
+        // show_entire_line(entire_line(l),l);
+        show_entire_line(l);
+    }
+
+    void show_entire_line(const int line) {
+        // show_entire_line(entire_line(line),line);
+        cout << chinese_name_lines[line] << ":" << endl;
+        int i;
+        for (i = 0; i < stations_of_line[line].size() - 1; i++) {
+            cout << chinese_name_sta[stations_of_line[line][i]] << " <- " << stations[stations_of_line[line][i + 1]][stations_of_line[line][i]] << " min"
+                 << " -> ";
+        }
+        cout << chinese_name_sta[stations_of_line[line][i]] << endl;
+    }
+
+    // void show_entire_line(const vector<int> correct_line, const int line) {
+    //     cout << "The stations on " << line << " are:" << endl;
+    //     for (int i = 0; i < correct_line.size() - 1; i++) {
+    //         cout << chinese_name_sta[correct_line[i]] << "<-->";
+    //     }
+    //     cout << chinese_name_sta[correct_line[correct_line.size() - 1]] << endl;
+    // }
+
     //最少换乘
     void show_LTS(vector<vector<int>> fault_solutions, int start, int end) {
         int flag;
@@ -518,6 +547,8 @@ public:
     vector<vector<int>> Dijkstra_LeastTimeSolutions(int start, int end) {
         int n = stations.size();
 
+        int totalTime = 0;
+
         vector<vector<int>> res(n, vector<int>(0, 0));
 
         vector<int> dist(n, my_max);
@@ -558,6 +589,8 @@ public:
         int p = end;
         while (!path[p].empty()) {
             s.push(path[p].back());
+            totalTime += stations[p][path[p].back()];
+            // cout << totalTime;
             p = path[p].back();
         }
 
@@ -569,11 +602,16 @@ public:
         }
         res[0].push_back(end);
 
+        for (int i = 0; i < res[0].size(); i++) cout << chinese_name_sta[res[0][i]] << " ";
+
         return res;
     }
 
     void printPath(vector<vector<int>> path) {
-        int currline, flag;
+        int currline, nextStation, flag, time, totalTime = 0;
+
+        cout << "Here is the best choice:" << endl;
+
         for (int i = 0; i < path.size(); i++) {
             currline = -1;
             for (int j = 0; j < path[i].size(); j++) {
@@ -584,14 +622,55 @@ public:
                         break;
                     }
                 }
+                // cout << flag;
+                if (!flag) { // 换乘
+                    time = 0;
+                    if (currline != -1) {
+                        cout << endl
+                             << "Transfer:";
+                    }
+                    cout << endl
+                         << "Take the ";
+                    vector<int> nextlines;
+                    for (int k = 0; k < lines_of_sta[path[i][j]].size(); k++) {
+                        for (int l = 0; l < lines_of_sta[path[i][j + 1]].size(); l++) {
+                            if (lines_of_sta[path[i][j]][k] == lines_of_sta[path[i][j + 1]][l]) nextlines.push_back(lines_of_sta[path[i][j]][k]);
+                            cout << nextlines[0]<<endl;
+                        }
+                    }
+                    for (int k = 0; k < nextlines.size(); k++) {
+                        currline = nextlines[k];
+                        cout << chinese_name_lines[nextlines[k]] << " train";
+                        cout << " Toward ";
+                        for (int l = 0; l < stations_of_line[nextlines[k]].size(); l++) {
+                            if (stations_of_line[nextlines[k]][l] == path[i][j]) {
+                                cout << chinese_name_sta[stations_of_line[nextlines[k]].back()];
+                                break;
+                            }
+                            if (stations_of_line[nextlines[k]][l] == path[i][j + 1]) {
+                                cout << chinese_name_sta[stations_of_line[nextlines[k]][0]];
+                                break;
+                            }
+                        }
+                        if (k < nextlines.size() - 1) cout << " or ";
+                    }
+                    if (j) j--;
 
-                cout << chinese_name_sta[path[i][j]] << " ";
+                    cout << endl;
+                } else {
+                    if (j) totalTime += stations[path[i][j]][path[i][j - 1]];
+                    // cout << totalTime << endl;
+                }
+
+                cout << left << setw(16) << chinese_name_sta[path[i][j]] << time << " min" << endl;
+                if (j < path[i].size() - 1) time += stations[path[i][j]][path[i][j + 1]];
             }
-            // cout << endl;
         }
+        cout << endl
+             << "Totally takes " << totalTime << " min" << endl
+             << endl;
+        // cout << totalTime << endl;
     }
-
-    
 };
 
 #endif

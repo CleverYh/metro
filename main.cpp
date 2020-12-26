@@ -44,6 +44,7 @@ int main(void) {
                 cin >> des;
                 Info.Least_transfer_solution(start, des);
                 // Info.Least_stations_solution(start, des);
+                cout << endl;
                 Info.Least_time_solution(start, des);
                 break;
             case 0:
@@ -53,4 +54,6 @@ int main(void) {
                 cout << "Please enter 0, 1, 2 or 3 !" << endl;
         }
     }
-}
+
+    return 0;
+}            
