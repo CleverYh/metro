@@ -33,12 +33,11 @@ class Subway_info {
 public:
     Subway_info() { //读文件
 
-        // printf("Initializing...\n");
-
         ifstream in;
-        // in.open("guangzhou.txt");
 
-        in.open("C:\\Users\\cortex\\Documents\\code\\cpp\\metro\\guangzhou.txt");
+        in.open("guangzhou.txt");
+        // in.open("C:\\Users\\cortex\\Documents\\code\\cpp\\metro\\guangzhou.txt");
+
         string s, station_name, line_name;
         stringstream stream;
         int station_index, lineNum, line, staNum, adjcent_station_index, adjcent_station_weight;
@@ -56,11 +55,10 @@ public:
             // cout << chinese_name_lines[i] << " " << i << endl;
         }
 
-        // stations.resize(staNum,vector<int>(staNum,my_max));
         stations.resize(staNum);
+        for (int i = 0; i < staNum; i++) stations[i].resize(staNum, my_max);
 
         lines_of_sta.resize(staNum);
-        for (int i = 0; i < staNum; i++) stations[i].resize(staNum, my_max);
 
         lines.resize(lineNum);
         for (int i = 0; i < lineNum; i++) lines[i].resize(lineNum);
@@ -604,7 +602,7 @@ public:
         }
         res[0].push_back(end);
 
-        for (int i = 0; i < res[0].size(); i++) cout << chinese_name_sta[res[0][i]] << " ";
+        // for (int i = 0; i < res[0].size(); i++) cout << chinese_name_sta[res[0][i]] << " ";
 
         return res;
     }
