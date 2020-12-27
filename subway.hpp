@@ -96,6 +96,8 @@ public:
 
         in.close();
 
+        // cout << lines_of_sta[44].size() << endl;
+
         for (int i = 0; i < lines.size(); i++)
             stations_of_line.push_back(entire_line(i));
     }
@@ -617,6 +619,7 @@ public:
             for (int j = 0; j < path[i].size(); j++) {
                 flag = 0;
                 for (int k = 0; k < lines_of_sta[path[i][j]].size(); k++) {
+                    // cout << currline << " " << lines_of_sta[path[i][j]][k] << endl;
                     if (lines_of_sta[path[i][j]][k] == currline) {
                         flag = 1;
                         break;
@@ -626,6 +629,7 @@ public:
                 if (!flag) { // 换乘
                     time = 0;
                     if (currline != -1) {
+                        if (j) j--;
                         cout << endl
                              << "Transfer:";
                     }
@@ -634,8 +638,8 @@ public:
                     vector<int> nextlines;
                     for (int k = 0; k < lines_of_sta[path[i][j]].size(); k++) {
                         for (int l = 0; l < lines_of_sta[path[i][j + 1]].size(); l++) {
-                            if (lines_of_sta[path[i][j]][k] == lines_of_sta[path[i][j + 1]][l]) nextlines.push_back(lines_of_sta[path[i][j]][k]);
-                            cout << nextlines[0]<<endl;
+                            if (lines_of_sta[path[i][j]][k] == lines_of_sta[path[i][j + 1]][l])
+                                nextlines.push_back(lines_of_sta[path[i][j]][k]);
                         }
                     }
                     for (int k = 0; k < nextlines.size(); k++) {
@@ -654,7 +658,6 @@ public:
                         }
                         if (k < nextlines.size() - 1) cout << " or ";
                     }
-                    if (j) j--;
 
                     cout << endl;
                 } else {
