@@ -98,6 +98,13 @@ public:
 
         for (int i = 0; i < lines.size(); i++)
             stations_of_line.push_back(entire_line(i));
+
+        for(int i = 0;i<lines.size();i++){
+            for(int j =0;j<lines[i].size();j++){
+                cout << lines[i][j]<<" ";
+            }
+            cout << endl;
+        }
     }
 
     //中文站名到索引
@@ -293,7 +300,10 @@ public:
                     }
                 }
             }
-            cout << "-" << chinese_name_lines[solutions[i][solutions[i].size() - 1]] << "->" << chinese_name_sta[end] << endl;
+            if (!(solutions[i].size() - 1))
+                cout << chinese_name_sta[end] << endl;
+            else
+                cout << "-" << chinese_name_lines[solutions[i][solutions[i].size() - 1]] << "->" << chinese_name_sta[end] << endl;
         }
     }
 
@@ -339,12 +349,11 @@ public:
         record.push_back(head);
         while (iter <= sentinel) {
             if (iter == sentinel) {
-                if (flag)
-                    break;
+                if (flag) break;
                 sentinel = record.size();
             }
             pair<int, int> tmp = record[iter];
-            if (tmp.second == end)
+            if (tmp.second == end) // 到了终点
                 flag = 1;
             visited[tmp.second] = 1;
 
@@ -352,14 +361,14 @@ public:
                 if (!visited[i] && lines[tmp.second][i]) {
                     pair<int, int> new_rec(tmp.second, i);
                     record.push_back(new_rec);
-                    if (!flag) sentinel++;
+                    //if (!flag) sentinel++;
                 }
             }
 
             iter++;
         }
 
-        for (int i = record.size() - 1; 0 <= i; i--) {
+        for (int i = sentinel; 0 <= i; i--) {
             if (record[i].second == end) {
                 vector<int> ans;
                 ans.push_back(end);
@@ -381,6 +390,13 @@ public:
                 ret.push_back(ans);
             }
         }
+
+        // for(int i = 0;i<ret.size();i++){
+        //     for(int j =0;j<ret[i].size();j++){
+        //         cout << ret[i][j]<<" ";
+        //     }
+        //     cout << endl;
+        // }
 
         return ret;
     }
@@ -584,9 +600,54 @@ public:
             }
         }
 
-        // queue<int> q;
         stack<int> s;
         int p = end;
+
+        /* -------
+
+        void myDFS_iter(Graph g, vector<bool> & visited, Vertex s) {
+            size_t k = g[s].size();
+            visited[s] = true;
+
+            stack<Vertex> sta;
+            sta.push(s);
+
+            while (!sta.empty()) {
+                Vertex v = sta.top();
+
+                size_t j = 0;
+
+                for (; j < g[v].size(); j++) {
+                    Vertex w = g[v][j];
+
+                    if (!visited[w]) {
+                        visited[w] = true;
+                        sta.push(w);
+                        break;
+                    }
+                }
+
+                if (j == g[v].size()) sta.pop();
+            }
+        }
+
+        int myDFS(Graph g, Vertex s) {
+            size_t n = g.size();
+            int count = 0;
+            vector<bool> visited(n, false);
+
+            for (size_t i = 0; i < n; i++) {
+                if (!visited[i]) {
+                    myDFS_iter(g, visited, i);
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        ------- */
+
         while (!path[p].empty()) {
             s.push(path[p].back());
             totalTime += stations[p][path[p].back()];
@@ -626,6 +687,7 @@ public:
                 // cout << flag;
                 if (!flag) { // 换乘
                     time = 0;
+                    totalTime += 5;
                     if (currline != -1) {
                         if (j) j--;
                         cout << endl
