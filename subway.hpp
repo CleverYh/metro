@@ -20,8 +20,8 @@ using namespace std;
 // string linename[16]= { "地铁一号线","地铁二号线", "地铁三号线", "地铁三号线北延段","地铁四号线" ,"地铁五号线", "地铁六号线", "地铁七号线", "地铁八号线",
 //      "地铁九号线", "地铁十三号线", "地铁十四号线", "地铁二十一号线", "地铁广佛线","地铁APM线", "地铁十四号线支线" };
 
-// 1. 每个站和线路用不用有它自己的类，看起来不用。
-// 2.
+// TODO: make transfer time count and build a GUI
+
 class Subway_info {
     vector<vector<int>> stations;    // adjRect of stsations
     vector<vector<int>> lines;       // adjRect of lines
@@ -99,9 +99,9 @@ public:
         for (int i = 0; i < lines.size(); i++)
             stations_of_line.push_back(entire_line(i));
 
-        for(int i = 0;i<lines.size();i++){
-            for(int j =0;j<lines[i].size();j++){
-                cout << lines[i][j]<<" ";
+        for (int i = 0; i < lines.size(); i++) {
+            for (int j = 0; j < lines[i].size(); j++) {
+                cout << lines[i][j] << " ";
             }
             cout << endl;
         }
